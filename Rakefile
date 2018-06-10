@@ -73,14 +73,14 @@ def open_simulator_and_sleep(platform)
   sh "xcrun instruments -w '#{device_names[platform]} (#{device_os[platform]})' || sleep 15"
 end
 
-def xcodebuild(tasks, platform, xcprety_args: '', xcode_sumary: false)
+def xcodebuild(tasks, platform, xcprety_args: '', xcode_summary: false)
   sdk = sdks[platform]
   scheme = schemes[platform]
   destination = devices[platform]
 
   open_simulator_and_sleep(platform)
-  xcpretty_json_output_name = xcode_sumary == true ? "XCPRETTY_JSON_FILE_OUTPUT=\"xcodebuild-#{platform}.json\"" : ""
-  xcpretty_formatter = xcode_sumary == true ? "-f `xcpretty-json-formatter`" : ""
+  xcpretty_json_output_name = xcode_summary == true ? "XCPRETTY_JSON_FILE_OUTPUT=\"xcodebuild-#{platform}.json\"" : ""
+  xcpretty_formatter = xcode_summary == true ? "-f `xcpretty-json-formatter`" : ""
   safe_sh "set -o pipefail && xcodebuild -project '#{moya_project}' -scheme '#{scheme}' -configuration '#{configuration}' -sdk #{sdk} -destination '#{destination}' #{tasks} | bundle exec xcpretty #{xcpretty_json_output_name} -c #{xcprety_args} #{xcpretty_formatter}"
 end
 
@@ -114,7 +114,7 @@ desc 'Build, then run all tests.'
 task :test do
   targets.map do |platform|
     puts "Testing on #{platform}."
-    xcodebuild 'build test', platform, xcprety_args: '--test', xcode_sumary: true
+    xcodebuild 'build test', platform, xcprety_args: '--test', xcode_summary: true
     next unless platform == :mac
     sh "killall Simulator"
   end
@@ -124,18 +124,18 @@ desc 'Individual test tasks.'
 namespace :test do
   desc 'Test on iOS.'
   task :ios do
-    xcodebuild 'build test', :ios, xcprety_args: '--test', xcode_sumary: true
+    xcodebuild 'build test', :ios, xcprety_args: '--test', xcode_summary: true
     sh "killall Simulator"
   end
 
   desc 'Test on macOS.'
   task :macos do
-    xcodebuild 'build test', :macos, xcprety_args: '--test', xcode_sumary: true
+    xcodebuild 'build test', :macos, xcprety_args: '--test', xcode_summary: true
   end
 
   desc 'Test on tvOS.'
   task :tvos do
-    xcodebuild 'build test', :tvos, xcprety_args: '--test', xcode_sumary: true
+    xcodebuild 'build test', :tvos, xcprety_args: '--test', xcode_summary: true
     sh "killall Simulator"
   end
 
